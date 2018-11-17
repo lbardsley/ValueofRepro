@@ -1,0 +1,153 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import segyio\n",
+    "import numpy as np\n",
+    "from shutil import copyfile"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "filename = '/Users/Mikey/Documents/Workspace/segy/ESP2D_RAW_FULL_KPSTM_STACK_008A094.segy'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{JobID: 3964, LineNumber: 8, ReelNumber: 4386, Traces: 1, AuxTraces: 0, Interval: 4000, IntervalOriginal: 0, Samples: 2251, SamplesOriginal: 0, Format: 1, EnsembleFold: 162, SortingCode: 4, VerticalSum: 0, SweepFrequencyStart: 0, SweepFrequencyEnd: 0, SweepLength: 0, Sweep: 0, SweepChannel: 0, SweepTaperStart: 0, SweepTaperEnd: 0, Taper: 0, CorrelatedTraces: 0, BinaryGainRecovery: 1, AmplitudeRecovery: 1, MeasurementSystem: 1, ImpulseSignalPolarity: 2, VibratoryPolarity: 0, SEGYRevision: 256, TraceFlag: 1, ExtendedHeaders: 0}\n",
+      "1\n",
+      "94\n",
+      "[2007 2008 2009 ... 7082 7083 7084]\n",
+      "[94]\n"
+     ]
+    }
+   ],
+   "source": [
+    "with segyio.open(filename, \"r\") as segyfile:\n",
+    "\n",
+    "    # Memory map file for faster reading (especially if file is big...)\n",
+    "    segyfile.mmap()\n",
+    "\n",
+    "    # Print binary header info\n",
+    "    print(segyfile.bin)\n",
+    "    print(segyfile.bin[segyio.BinField.Traces])\n",
+    "\n",
+    "    # Read headerword inline for trace 10\n",
+    "    print(segyfile.header[10][segyio.TraceField.INLINE_3D])\n",
+    "\n",
+    "    # Print inline and crossline axis\n",
+    "    print(segyfile.xlines)\n",
+    "    print(segyfile.ilines)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "with segyio.open(filename, \"r\") as segyfile:\n",
+    "    # Read data along first xline\n",
+    "    data1 = segyfile.xline[segyfile.xlines[1]]\n",
+    "\n",
+    "    # Read data along last iline\n",
+    "    data2 = segyfile.iline[segyfile.ilines[-1]]\n",
+    "\n",
+    "    # Read data along 100th time slice\n",
+    "    data3 = segyfile.depth_slice[100]\n",
+    "\n",
+    "    # Read data cube\n",
+    "    data4 = segyio.tools.cube(filename)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 0.       ,  0.       ,  0.       , ..., 10.513072 , 11.6845255,\n",
+       "        11.754631 ]], dtype=float32)"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "data1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ModuleNotFoundError",
+     "evalue": "No module named 'PyQt4'",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-17-684949e25afd>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0;32mfrom\u001b[0m \u001b[0mPyQt4\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mQtGui\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mQApplication\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      2\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0msegyviewlib\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      3\u001b[0m \u001b[0mqapp\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mQApplication\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      4\u001b[0m \u001b[0ml\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0msegyviewlib\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msegyviewwidget\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mSegyViewWidget\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'filename.sgy'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m \u001b[0ml\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mshow\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'PyQt4'"
+     ],
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "from PyQt4.QtGui import QApplication\n",
+    "import segyviewlib\n",
+    "qapp = QApplication([])\n",
+    "l = segyviewlib.segyviewwidget.SegyViewWidget('filename.sgy')\n",
+    "l.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "segy",
+   "language": "python",
+   "name": "segy"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
